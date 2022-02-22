@@ -1,0 +1,27 @@
+{
+	"folders":
+	[
+		{
+			"path": "bin/..",
+			"file_exclude_patterns": ["*.sublime-project"]
+		}
+	],
+
+	"build_systems":
+	[
+		{
+			"name": "Wii U Debug",
+			"working_dir": "${project_path}",
+			"cmd": ["make", "&&", "C:/Users/Creep/Documents/Wii U USB Helper/DATA/EMULATORS/Cemu/BIN/Cemu.exe", "C:/Users/Creep/Desktop/Fireplace-WiiU-master/Fireplace-WiiU-master.rpx"],
+			"selector": "source.c++",
+			"shell": true
+		},
+		{
+			"name": "SDL2 Release",
+			"working_dir": "${project_path}",
+			"cmd": "C:/mingw64/bin/g++ -c src/*.cpp -std=c++14 -O3 -Wall -m64 -I include -I C:/SDL2/include && C:/mingw64/bin/g++ *.o -o bin/release/main -s -L C:/mingw64/lib -lmingw32 -L C:/SDL2/lib -lSDL2main -lSDL2 -lSDL2_image -mwindows && start bin/release/main",
+			"selector": "source.c++",
+			"shell": true
+		}
+	]
+}
