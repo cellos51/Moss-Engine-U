@@ -132,11 +132,11 @@ void RenderWindow::quit() // used before exiting the program
 	SDL_Quit();
 }
 
-void RenderWindow::camera(Entity& p_ent) // used before exiting the program
+void RenderWindow::camera(Vector2 pos, Vector2 size) // used before exiting the program
 {
-	float cameraX = p_ent.transform.x - p_ent.transform.x * 2 + zoom - cameraPos.x + getSize().x / (2 - zoom * 2) - p_ent.size.x / (2 - zoom * 2);
+	float cameraX = pos.x - pos.x * 2 + zoom - cameraPos.x + getSize().x / (2 - zoom * 2) - size.x / (2 - zoom * 2);
 	cameraPos.x += cameraX * 0.01 * Time::deltaTime();
-	float cameraY = p_ent.transform.y - p_ent.transform.y * 2 + zoom - cameraPos.y + getSize().y / (2 - zoom * 2) - p_ent.size.y / (2 - zoom * 2);
+	float cameraY = pos.y - pos.y * 2 + zoom - cameraPos.y + getSize().y / (2 - zoom * 2) - size.y / (2 - zoom * 2);
 	cameraPos.y += cameraY * 0.01 * Time::deltaTime();
 }
 

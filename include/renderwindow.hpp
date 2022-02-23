@@ -22,7 +22,7 @@ public:
 	// void render(ui& p_ui);
 	void display();
 	void quit();
-	void camera(Entity& p_ent);
+	void camera(Vector2 pos, Vector2 size);
 	float zoom = 0; // i have no clue what numbers work best
 	Vector2 getSize();
 	Vector2 cameraPos = Vector2(0,0);

@@ -13,9 +13,9 @@ namespace Event
 	bool MouseDown(int i);
 	bool KeyPressed(int i);
 	bool KeyDown(int i);
-	bool JoyPressed(int i);
-	bool JoyDown(int i);
-	Vector2 StickPosition();
+	bool JoyPressed(int i, int player);
+	bool JoyDown(int i, int player);
+	Vector2 StickPosition(int player);
 	//bool TextInputEnabled(bool i);
 	//bool TextInputEnabled();
 	//std::string GetInputText();

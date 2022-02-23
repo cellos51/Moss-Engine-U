@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <romfs-wiiu.h>
+#include <whb/proc.h>
 
 #include "text.hpp"
 
@@ -24,8 +25,8 @@
 
 // random shit needed to be here to run
 bool init();
-bool gameRunning = true;
-SDL_Joystick* gGameController = NULL;
+SDL_Joystick* gGameController1 = NULL;
+SDL_Joystick* gGameController2 = NULL;
 
 // main window
 RenderWindow window;
@@ -41,23 +42,14 @@ Vector2 PlayerSpawn = Vector2(0,0);
 
 bool load = init(); // this is the end of textures and windows OK NVM
 
-Player plr (PlayerSpawn, window.loadTexture("romfs:/textures/player.png"), Vector2(64,64));
-
-// for online mode
-//std::map<int,Entity> players;
-
-// user interface test stuff
-//std::vector<ui::Button> buttons;
-//ui::Button button; // this stupid thing has to be here because if i put it in the same loop as the vector it crashes
-//ui::TextInput ipInput;
-//int menuType = 0;
+Player plr1 (PlayerSpawn, window.loadTexture("romfs:/textures/player.png"), Vector2(64,64), 1);
+Player plr2 (PlayerSpawn, window.loadTexture("romfs:/textures/dummy.png"), Vector2(64,64), 2);
 
 bool init() // used to initiate things before using
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	SDL_Init(SDL_INIT_VIDEO);
 	IMG_Init(IMG_INIT_PNG);
-	TTF_Init();
 	SDL_StopTextInput();
 	romfsInit();
 
@@ -81,9 +73,14 @@ bool init() // used to initiate things before using
 
 	PlayerSpawn = Level::LoadLevel(Level::LoadFile("romfs:/levels/level1.lvl"), walls, window, tileSet);
 
-	if( SDL_NumJoysticks() > 0 )
+	if ( SDL_NumJoysticks() == 1 )
 	{
-		gGameController = SDL_JoystickOpen( 0 );
+		gGameController1 = SDL_JoystickOpen( 0 );
+	}
+	else if ( SDL_NumJoysticks() > 1 )
+	{
+		gGameController1 = SDL_JoystickOpen( 0 );
+		gGameController2 = SDL_JoystickOpen( 1 );
 	}
 
 	return true;
@@ -91,193 +88,50 @@ bool init() // used to initiate things before using
 
 void gameLoop() // it runs forever
 {
-	// if (Event::KeyDown(SDLK_ESCAPE))
-	// {
-	// 	if (menuType > 0)
-	// 	{
-	// 		menuType = 0;
-	// 	}
-	// 	else if (menuType == 0)
-	// 	{
-	// 		menuType = 1;
-	// 	}
-	// }
+	if ( SDL_NumJoysticks() > 1 )
+	{
+		gGameController2 = SDL_JoystickOpen( 1 );
+	}
+	else 
+	{
+		gGameController2 = NULL;
+	}
 
-	// if (menuType == 1)
-	// {
-	// 	if (buttons.size() != 3)
-	// 	{
-	// 		buttons.clear();
-	// 		for (int i = 0; i < 3; i++)
-	// 		{
-	// 			buttons.push_back(button);
-	// 		}
-	// 	}
+	if (SDL_NumJoysticks() == 1)
+	{
+		window.camera(plr1.transform, plr1.size);
+	}
+	else if (SDL_NumJoysticks() > 1)
+	{
+		window.camera(Vector2((plr1.transform.x + plr2.transform.x) / 2, (plr1.transform.y + plr2.transform.y) / 2), plr1.size);
+	}
+	
 
-	// 	buttons[0].size.x = 200;
-	// 	buttons[0].size.y = 64;
-
-	// 	buttons[0].transform.x = (window.getSize().x / 2) - (buttons[0].size.x / 2);
-	// 	buttons[0].transform.y = (window.getSize().y / 2) - 200;
-	// 	buttons[0].uiText.setText("Resume");
-
-	// 	buttons[1].size.x = 200;
-	// 	buttons[1].size.y = 64;
-
-	// 	buttons[1].transform.x = (window.getSize().x / 2) - (buttons[0].size.x / 2);
-	// 	buttons[1].transform.y = (window.getSize().y / 2) - 100;
-	// 	buttons[1].uiText.setText("Multiplayer");
-
-	// 	buttons[2].size.x = 200;
-	// 	buttons[2].size.y = 64;
-
-	// 	buttons[2].transform.x = (window.getSize().x / 2) - (buttons[0].size.x / 2);
-	// 	buttons[2].transform.y = (window.getSize().y / 2);
-	// 	buttons[2].uiText.setText("Quit");
-
-	// 	//button.uiText.transform.x = (button.transform.x) + ((button.size.x / 2) - button.uiText.size.x / 2);
-	// 	//button.uiText.transform.y = (button.transform.y) + ((button.size.y / 2) - button.uiText.size.x / 2);
-
-	// 	if (buttons[0].onClick())
-	// 	{
-	// 		menuType = 0; 
-	// 	}
-
-	// 	if (buttons[1].onClick())
-	// 	{
-	// 		menuType = 2; 
-	// 	}
-
-	// 	if (buttons[2].onClick())
-	// 	{
-	// 		gameRunning = false; 
-	// 	}
-	// }
-	// else if (menuType == 2)
-	// {
-	// 	if (buttons.size() != 3)
-	// 	{
-	// 		buttons.clear();
-	// 		for (int i = 0; i < 3; i++)
-	// 		{
-	// 			buttons.push_back(button);
-	// 		}
-	// 	}
-
-	// 	buttons[0].size.x = 200;
-	// 	buttons[0].size.y = 64;
-
-	// 	buttons[0].transform.x = (window.getSize().x / 2) - (buttons[0].size.x / 2);
-	// 	buttons[0].transform.y = (window.getSize().y / 2) - 200;
-	// 	buttons[0].uiText.setText("Host");
-
-	// 	buttons[1].size.x = 200;
-	// 	buttons[1].size.y = 64;
-
-	// 	buttons[1].transform.x = (window.getSize().x / 2) - (buttons[0].size.x / 2);
-	// 	buttons[1].transform.y = (window.getSize().y / 2) - 100;
-	// 	buttons[1].uiText.setText("Join");
-
-	// 	buttons[2].size.x = 200;
-	// 	buttons[2].size.y = 64;
-
-	// 	buttons[2].transform.x = (window.getSize().x / 2) - (buttons[0].size.x / 2);
-	// 	buttons[2].transform.y = (window.getSize().y / 2);
-	// 	buttons[2].uiText.setText("Back");
-
-
-	// 	if (buttons[0].onClick())
-	// 	{
-	// 		menuType = 0; 
-	// 	}
-
-	// 	if (buttons[1].onClick())
-	// 	{
-	// 		menuType = 3; 
-	// 	}
-
-	// 	if (buttons[2].onClick())
-	// 	{
-	// 		menuType = 1; 
-	// 	}
-	// }
-	// else if (menuType == 3)
-	// {
-	// 	if (buttons.size() != 2)
-	// 	{
-	// 		buttons.clear();
-	// 		for (int i = 0; i < 2; i++)
-	// 		{
-	// 			buttons.push_back(button);
-	// 		}
-	// 	}
-
-	// 	ipInput.size.x = 400;
-	// 	ipInput.size.y = 64;
-
-	// 	ipInput.transform.x = (window.getSize().x / 2) - (ipInput.size.x / 2);
-	// 	ipInput.transform.y = (window.getSize().y / 2) - 200;
-	// 	ipInput.startTextInput();
-
-	// 	buttons[0].size.x = 200;
-	// 	buttons[0].size.y = 64;
-
-	// 	buttons[0].transform.x = (window.getSize().x / 2) - (buttons[0].size.x / 2);
-	// 	buttons[0].transform.y = (window.getSize().y / 2) - 100;
-	// 	buttons[0].uiText.setText("Connect");
-
-	// 	buttons[1].size.x = 200;
-	// 	buttons[1].size.y = 64;
-
-	// 	buttons[1].transform.x = (window.getSize().x / 2) - (buttons[0].size.x / 2);
-	// 	buttons[1].transform.y = (window.getSize().y / 2);
-	// 	buttons[1].uiText.setText("Back");
-
-	// 	if (buttons[0].onClick())
-	// 	{
-	// 		menuType = 0;
-	// 	}
-
-	// 	if (buttons[1].onClick())
-	// 	{
-	// 		menuType = 1; 
-	// 	}
-	// }
-
-
-	window.camera(plr);
-
-	if (Event::JoyDown(SDL_CONTROLLER_BUTTON_LEFTSTICK) && window.zoom != 0.75)
+	if (Event::JoyDown(SDL_CONTROLLER_BUTTON_LEFTSTICK, 1) && window.zoom != 0.75)
 	{
 		window.zoom = window.zoom + 0.25;
 	}
-	else if (Event::JoyDown(SDL_CONTROLLER_BUTTON_START) && window.zoom != 0)
+	else if (Event::JoyDown(SDL_CONTROLLER_BUTTON_START, 1) && window.zoom != 0)
 	{
 		window.zoom = window.zoom - 0.25;
 	}
 
-	// if (Event::JoyPressed(SDL_CONTROLLER_BUTTON_START))
-	// {
-	// 	window.zoom = 0;
-	// }
-	// else if (Event::JoyPressed(SDL_CONTROLLER_BUTTON_LEFTSTICK))
-	// {
-	// 	window.zoom = 0.25;
-	// }
-	// else if (Event::KeyPressed(SDLK_3))
-	// {
-	// 	window.zoom = 0.5;
-	// }
-	// else if (Event::KeyPressed(SDLK_4))
-	// {
-	// 	window.zoom = 0.75;
-	// }	
+	plr1.update();
 
-	plr.update();
+	if (SDL_NumJoysticks() > 1)
+	{
+		plr2.update();
+	}
 	
+
 	for (Entity wall : walls)
 	{
-		plr.getCol(wall);
+		plr1.getCol(wall);
+
+		if (SDL_NumJoysticks() > 1)
+		{
+			plr2.getCol(wall);
+		}
 	}
 }
 
@@ -286,30 +140,17 @@ void render() // honestly i feel like putting the stuff that is at the end of th
 {
 	window.clear();
 
-  	// for (std::map<int,Entity>::iterator it = players.begin(); it != players.end(); ++it)
-  	// {
-  	// 	window.render(it->second, true);
-  	// }
-
-	window.render(plr, true);
+	if (SDL_NumJoysticks() > 1)
+	{
+		window.render(plr2, true);
+	}
+	
+	window.render(plr1, true);
 
 	for (Entity wall : walls)
 	{
 		window.render(wall, true);
 	}
-
-	// if (menuType > 0)
-	// {
-	// 	for (ui::Button button : buttons)
-	// 	{
-	// 		window.render(button);
-	// 	}
-	// }
-
-	// if (menuType == 3)
-	// {
-	// 	window.render(ipInput);
-	// }
 	
 
 	window.display();
@@ -317,11 +158,10 @@ void render() // honestly i feel like putting the stuff that is at the end of th
 
 int main(int argc, char* args[])
 {
-	while (gameRunning) // main game loop ran every frame
+	while (WHBProcIsRunning()) // main game loop ran every frame
 	{
 		Time::Tick();
 		Event::PollEvent();
-		gameRunning = Event::AppQuit();
 		gameLoop();
 		render();
 	}

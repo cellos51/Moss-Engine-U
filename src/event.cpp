@@ -16,11 +16,17 @@ std::map<int, bool> keyMap;
 
 std::map<int, bool> keyDownMap;
 
-std::map<int, bool> joyMap;
+std::map<int, bool> joyMap1;
 
-std::map<int, bool> joyDownMap;
+std::map<int, bool> joyDownMap1;
 
-Vector2 StickState;
+std::map<int, bool> joyMap2;
+
+std::map<int, bool> joyDownMap2;
+
+Vector2 StickState1;
+
+Vector2 StickState2;
 
 //bool isTextInput = false;
 
@@ -38,10 +44,16 @@ void Event::PollEvent()
 		element.second = false;
 	}
 
-	for (auto & element : joyDownMap)
+	for (auto & element : joyDownMap1)
 	{
 		element.second = false;
 	}
+
+	for (auto & element : joyDownMap2)
+	{
+		element.second = false;
+	}
+
 
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
@@ -93,49 +105,106 @@ void Event::PollEvent()
 			break;
 			case SDL_JOYBUTTONDOWN:
 			{
-				joyMap[event.jbutton.button] = true;
-				joyDownMap[event.jbutton.button] = true;
+				if (event.jbutton.which == 0)
+				{
+					joyMap1[event.jbutton.button] = true;
+					joyDownMap1[event.jbutton.button] = true;
+				}
+				else if (event.jbutton.which == 1)
+				{
+					joyMap2[event.jbutton.button] = true;
+					joyDownMap2[event.jbutton.button] = true;
+				}
+				
 			}
 			break;
 			case SDL_JOYBUTTONUP:
 			{
-				joyMap[event.jbutton.button] = false;
-				joyDownMap[event.jbutton.button] = false;
+				if (event.jbutton.which == 0)
+				{
+					joyMap1[event.jbutton.button] = false;
+					joyDownMap1[event.jbutton.button] = false;
+				}
+				else if (event.jbutton.which == 1)
+				{
+					joyMap2[event.jbutton.button] = false;
+					joyDownMap2[event.jbutton.button] = false;
+				}
 			}
 			case SDL_JOYAXISMOTION:
 			{
-				if( event.jaxis.axis == 0 )
+				if (event.jbutton.which == 0)
 				{
+					if( event.jaxis.axis == 0 )
+					{
                                 //Left of dead zone
-					if( event.jaxis.value < -8000 )
-					{
-						StickState.x = -1;
-					}
+						if( event.jaxis.value < -8000 )
+						{
+							StickState1.x = -1;
+						}
                                 //Right of dead zone
-					else if( event.jaxis.value > 8000 )
-					{
-						StickState.x =  1;
+						else if( event.jaxis.value > 8000 )
+						{
+							StickState1.x =  1;
+						}
+						else
+						{
+							StickState1.x = 0;
+						}
 					}
-					else
+					else if( event.jaxis.axis == 1 )
 					{
-						StickState.x = 0;
+                                //Below of dead zone
+						if( event.jaxis.value < -8000 )
+						{
+							StickState1.y = -1;
+						}
+                                //Above of dead zone
+						else if( event.jaxis.value > 8000 )
+						{
+							StickState1.y =  1;
+						}
+						else
+						{
+							StickState1.y = 0;
+						}
 					}
 				}
-				else if( event.jaxis.axis == 1 )
+				else if (event.jbutton.which == 1)
 				{
+					if( event.jaxis.axis == 0 )
+					{
+                                //Left of dead zone
+						if( event.jaxis.value < -8000 )
+						{
+							StickState2.x = -1;
+						}
+                                //Right of dead zone
+						else if( event.jaxis.value > 8000 )
+						{
+							StickState2.x =  1;
+						}
+						else
+						{
+							StickState2.x = 0;
+						}
+					}
+					else if( event.jaxis.axis == 1 )
+					{
                                 //Below of dead zone
-					if( event.jaxis.value < -8000 )
-					{
-						StickState.y = -1;
-					}
+						if( event.jaxis.value < -8000 )
+						{
+							StickState2.y = -1;
+						}
                                 //Above of dead zone
-					else if( event.jaxis.value > 8000 )
-					{
-						StickState.y =  1;
-					}
-					else
-					{
-						StickState.y = 0;
+						else if( event.jaxis.value > 8000 )
+						{
+							StickState2.y =  1;
+						}
+						else
+						{
+							StickState2.y = 0;
+						}
 					}
 				}
 			}
@@ -184,19 +253,46 @@ bool Event::KeyDown(int i)
 	return keyDownMap.find(i)->second; 
 }
 
-bool Event::JoyPressed(int i)
+bool Event::JoyPressed(int i, int player)
 {
-	return joyMap.find(i)->second;
+	if (player == 1)
+	{
+		return joyMap1.find(i)->second;
+	}
+	else if (player == 2)
+	{
+		return joyMap2.find(i)->second;
+	}
+
+	return false;
 }
 
-bool Event::JoyDown(int i)
+bool Event::JoyDown(int i, int player)
 {
-	return joyDownMap.find(i)->second;
+	if (player == 1)
+	{
+		return joyDownMap1.find(i)->second;
+	}
+	else if (player == 2)
+	{
+		return joyDownMap2.find(i)->second;
+	}
+
+	return false;
 }
 
-Vector2 Event::StickPosition()
+Vector2 Event::StickPosition(int player)
 {
-	return StickState;
+	if (player == 1)
+	{
+		return StickState1;
+	}
+	else if (player == 2)
+	{
+		return StickState2;
+	}
+
+	return Vector2(0,0);
 }
 // bool Event::TextInputEnabled(bool i)
 // {
